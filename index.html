@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Analyseur de parties chess.com</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>Analyseur de parties <span>chess.com</span></h1>
+  <form id="load">
+    <input id="user" placeholder="pseudo chess.com" autocomplete="off" required>
+    <select id="months" title="Période à récupérer">
+      <option value="1">1 mois</option>
+      <option value="3" selected>3 mois</option>
+      <option value="6">6 mois</option>
+      <option value="12">12 mois</option>
+      <option value="999">tout</option>
+    </select>
+    <button type="submit">Charger mes parties</button>
+  </form>
+  <p id="status" class="status"></p>
+  <div id="profile" class="profile"></div>
+</header>
+
+<main>
+  <section id="reportSec" hidden>
+    <h2>Rapport global <small id="reportCount"></small></h2>
+    <div id="cards" class="cards"></div>
+    <div class="cols">
+      <div>
+        <h3>Ouvertures</h3>
+        <div class="scroll"><table id="openings"></table></div>
+      </div>
+      <div>
+        <h3>Causes de défaite</h3>
+        <div class="scroll"><table id="reasons"></table></div>
+      </div>
+    </div>
+    <h3>À travailler en priorité</h3>
+    <ol id="globalAdvice" class="advice"></ol>
+  </section>
+
+  <section id="batchSec" hidden>
+    <h2>Analyse moteur</h2>
+    <div class="row">
+      <label>Profondeur
+        <select id="depth">
+          <option value="8">8 — rapide</option>
+          <option value="11" selected>11 — normal</option>
+          <option value="14">14 — profond (lent)</option>
+        </select>
+      </label>
+      <label>Parties
+        <select id="batchN">
+          <option value="1">la plus récente</option>
+          <option value="5" selected>5 dernières</option>
+          <option value="10">10 dernières</option>
+          <option value="20">20 dernières</option>
+        </select>
+      </label>
+      <button id="runBatch" type="button">Analyser (filtre courant)</button>
+      <button id="stopBatch" type="button" hidden>Arrêter</button>
+      <progress id="prog" value="0" max="1" hidden></progress>
+      <span id="progTxt" class="muted"></span>
+    </div>
+    <div id="pooled" hidden>
+      <h3>Synthèse des parties analysées <small id="pooledCount"></small></h3>
+      <div id="pooledCards" class="cards"></div>
+      <ol id="pooledAdvice" class="advice"></ol>
+    </div>
+  </section>
+
+  <section id="gamesSec" hidden>
+    <h2>Parties <small id="gamesCount"></small></h2>
+    <div class="row filters">
+      <select id="fClass"><option value="">toutes cadences</option></select>
+      <select id="fColor">
+        <option value="">les 2 couleurs</option>
+        <option value="w">blancs</option>
+        <option value="b">noirs</option>
+      </select>
+      <select id="fRes">
+        <option value="">tous résultats</option>
+        <option value="w">victoires</option>
+        <option value="l">défaites</option>
+        <option value="d">nulles</option>
+      </select>
+      <input id="fOpening" placeholder="filtrer par ouverture" autocomplete="off">
+    </div>
+    <div class="scroll tall"><table id="games"></table></div>
+  </section>
+
+  <section id="gameSec" hidden>
+    <h2 id="gameTitle"></h2>
+    <div class="game">
+      <div class="boardWrap">
+        <div class="evalbar"><div id="evalFill"></div></div>
+        <div id="board" class="board"></div>
+        <div class="row nav">
+          <button id="first" type="button" title="début">|&lt;</button>
+          <button id="prev" type="button" title="précédent (flèche gauche)">&lt;</button>
+          <button id="next" type="button" title="suivant (flèche droite)">&gt;</button>
+          <button id="last" type="button" title="fin">&gt;|</button>
+          <button id="flip" type="button" title="retourner">retourner</button>
+          <a id="chesscom" href="#" target="_blank" rel="noopener">voir sur chess.com</a>
+        </div>
+        <div class="legend">
+          <span class="t-meilleur">★ meilleur</span>
+          <span class="t-bon">· correct</span>
+          <span class="t-imprecision">?! imprécision</span>
+          <span class="t-erreur">? erreur</span>
+          <span class="t-gaffe">?? gaffe</span>
+        </div>
+      </div>
+      <div class="movesWrap">
+        <div class="scroll tall"><table id="moves"></table></div>
+      </div>
+      <div id="plyInfo" class="plyInfo"></div>
+    </div>
+    <div class="cols">
+      <div>
+        <h3>Bilan de la partie</h3>
+        <div id="gameCards" class="cards"></div>
+        <div class="scroll"><table id="phases"></table></div>
+      </div>
+      <div>
+        <h3>Ce qu'il faut corriger</h3>
+        <ol id="gameAdvice" class="advice"></ol>
+        <h3>Les coups les plus coûteux</h3>
+        <ol id="worst" class="worst"></ol>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Données publiques de l'API chess.com (aucun mot de passe nécessaire). Analyse par
+  Stockfish&nbsp;10 exécuté dans ton navigateur.</p>
+  <p class="muted">À ouvrir via un serveur local (<code>python -m http.server</code> puis
+  <code>http://localhost:8000</code>) : en <code>file://</code> le navigateur bloque les requêtes réseau.</p>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

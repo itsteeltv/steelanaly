@@ -1,0 +1,365 @@
+/* Palette reprise de l'interface sombre de chess.com */
+:root {
+  --bg: #302e2b;
+  --panel: #262522;
+  --panel2: #3c3b39;
+  --line: #4a4846;
+  --fg: #f4f4f4;
+  --muted: #a8a6a3;
+  --accent: #81b64c;
+  --accent-hi: #a3d160;
+  --accent-lo: #5d8a35;
+
+  --sq-light: #ebecd0;
+  --sq-dark: #739552;
+  --hl-move: #ffff33;       /* surbrillance du coup joué, comme chess.com */
+  --hl-best: #81b64c;
+
+  /* couleurs de classification du Game Review */
+  --meilleur: #81b64c;
+  --bon: #95b776;
+  --imprecision: #f7c631;
+  --erreur: #ffa459;
+  --gaffe: #fa412d;
+
+  --board: clamp(300px, 36vw, 460px);
+  --radius: 6px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 1.25rem 3rem;
+  background: var(--bg);
+  color: var(--fg);
+  font: 15px/1.55 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+header, main, footer { max-width: 1180px; margin: 0 auto; }
+
+h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; margin: 1.5rem 0 1rem; }
+h1 span { color: var(--accent); }
+
+h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 2.4rem 0 1rem;
+  padding-left: .65rem;
+  border-left: 4px solid var(--accent);
+  letter-spacing: -.01em;
+}
+h3 {
+  font-size: .72rem;
+  margin: 1.4rem 0 .6rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 700;
+}
+h2 small, h3 small { font-weight: 400; color: var(--muted); font-size: .78rem; letter-spacing: 0; text-transform: none; }
+.muted { color: var(--muted); }
+code { background: #00000040; padding: .12em .4em; border-radius: 4px; font-size: .9em; }
+
+/* ---------------------------------------------------------- contrôles ---- */
+
+input, select, button {
+  font: inherit;
+  background: var(--panel2);
+  color: var(--fg);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  padding: .5rem .7rem;
+}
+input, select { background: #21201d; border-color: #00000055; }
+input::placeholder { color: #7d7b78; }
+input:focus, select:focus, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+button { cursor: pointer; font-weight: 600; transition: background .1s, transform .05s; }
+button:hover:not(:disabled) { background: #4a4947; }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: .45; cursor: default; }
+
+/* bouton principal : vert plein avec l'arête basse plus sombre */
+#load button[type=submit], #runBatch {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--accent-lo);
+  margin-bottom: 3px;
+}
+#load button[type=submit]:hover:not(:disabled), #runBatch:hover:not(:disabled) { background: var(--accent-hi); }
+#load button[type=submit]:active:not(:disabled), #runBatch:active:not(:disabled) {
+  box-shadow: 0 1px 0 var(--accent-lo);
+  transform: translateY(2px);
+}
+
+form, .row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+.row label { display: flex; gap: .4rem; align-items: center; color: var(--muted); font-size: .85rem; }
+.filters { margin-bottom: .8rem; }
+.filters input { flex: 1 1 200px; min-width: 0; }
+
+.status { min-height: 1.4em; color: var(--accent); font-size: .9rem; margin: .8rem 0 .4rem; font-weight: 600; }
+.status.err { color: var(--gaffe); }
+.profile { display: flex; gap: .9rem; flex-wrap: wrap; color: var(--muted); font-size: .9rem; }
+.profile b { color: var(--fg); }
+
+/* -------------------------------------------------------------- cartes ---- */
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: .6rem; }
+.cols .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 520px) { .cols .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.card { background: var(--panel); border-radius: var(--radius); padding: .7rem .9rem; }
+.card b {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+/* `>` indispensable : sinon les <span> colorés à l'intérieur du <b> seraient rapetissés */
+.card > span {
+  display: block;
+  margin-top: .15rem;
+  color: var(--muted);
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------------ tableaux ---- */
+
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; }
+.cols > div { min-width: 0; }
+@media (max-width: 840px) { .cols { grid-template-columns: 1fr; } }
+
+.scroll { overflow: auto; border-radius: var(--radius); background: var(--panel); }
+.scroll.tall { max-height: 440px; }
+
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+th, td { text-align: left; padding: .45rem .7rem; border-bottom: 1px solid #ffffff0f; }
+tbody tr:last-child td { border-bottom: 0; }
+th {
+  position: sticky;
+  top: 0;
+  background: var(--panel2);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  white-space: nowrap;
+  z-index: 1;
+}
+tbody tr:nth-child(even) { background: #ffffff06; }
+tbody tr:hover { background: #ffffff12; }
+td.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+td.nw { white-space: nowrap; }
+td button { padding: .25rem .6rem; font-size: .82rem; }
+
+/* -------------------------------------------------------------- conseils ---- */
+
+.advice { margin: 0; padding: 0; list-style: none; counter-reset: a; }
+.advice li {
+  counter-increment: a;
+  position: relative;
+  background: var(--panel);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: .75rem .95rem .8rem 2.7rem;
+  margin-bottom: .6rem;
+}
+.advice li::before {
+  content: counter(a);
+  position: absolute;
+  left: .95rem;
+  top: .72rem;
+  color: var(--accent);
+  font-weight: 800;
+}
+.advice > li > b { color: var(--fg); font-weight: 700; display: block; margin-bottom: .35rem; }
+.advice p { margin: .3rem 0 0; color: #d2d0cd; font-size: .9rem; }
+
+/* étiquettes "Pourquoi" / "Comment corriger" */
+.lbl {
+  display: inline-block;
+  margin-right: .5rem;
+  padding: .05rem .4rem;
+  border-radius: 3px;
+  background: #ffffff14;
+  color: var(--muted);
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  vertical-align: 1px;
+}
+.lbl.ok { background: #81b64c26; color: var(--accent); }
+
+.worst { margin: 0; padding: 0; list-style: none; }
+.worst li {
+  padding: .45rem .7rem;
+  border-radius: var(--radius);
+  margin-bottom: .4rem;
+  cursor: pointer;
+  font-size: .9rem;
+  background: var(--panel);
+}
+.worst li:hover { background: #ffffff14; }
+.worst b { color: var(--meilleur); }
+
+/* ------------------------------------------------------- vue d'une partie ---- */
+
+.game {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 1.4rem;
+  align-items: start;
+}
+@media (max-width: 840px) {
+  .game { grid-template-columns: 1fr; }
+  /* sur une colonne, l'échiquier prend la largeur dispo (la taille des glyphes suit) */
+  :root { --board: min(92vw, 460px); }
+}
+
+.boardWrap { display: flex; flex-direction: column; gap: .55rem; width: var(--board); max-width: 100%; }
+.boardWrap .nav { gap: .35rem; }
+.boardWrap .nav button { padding: .35rem .65rem; }
+.boardWrap .nav a { color: var(--muted); font-size: .8rem; margin-left: auto; }
+.boardWrap .nav a:hover { color: var(--accent); }
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  overflow: hidden;
+  user-select: none;
+  box-shadow: 0 8px 28px #0006;
+}
+.sq {
+  position: relative;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+.sq.l { background: var(--sq-light); }
+.sq.d { background: var(--sq-dark); }
+
+.pc {
+  font-size: calc(var(--board) / 10.5);
+  line-height: 1;
+  padding-bottom: .04em;
+}
+/* Glyphes pleins pour les deux camps : le contour fait la différence.
+   text-shadow plutôt que -webkit-text-stroke, qui ronge le glyphe de l'intérieur. */
+.sq.w .pc {
+  color: #fff;
+  text-shadow: 1px 0 0 #1b1b1b, -1px 0 0 #1b1b1b, 0 1px 0 #1b1b1b, 0 -1px 0 #1b1b1b,
+               1px 1px 0 #1b1b1b, -1px -1px 0 #1b1b1b, 1px -1px 0 #1b1b1b, -1px 1px 0 #1b1b1b;
+}
+.sq.b .pc { color: #312e2b; text-shadow: 0 0 2px #ffffff40; }
+
+/* Coup joué : voile jaune translucide, comme chess.com.
+   inset box-shadow plutôt qu'un ::before, qui est pris par les coordonnées. */
+.sq.played { box-shadow: inset 0 0 0 100px #ffff336b; }
+/* le coup recommandé est cerclé : un voile vert serait invisible sur case verte */
+.sq.best { box-shadow: inset 0 0 0 5px var(--accent-hi); }
+
+/* coordonnées dans les coins */
+.sq[data-f]::after, .sq[data-r]::before {
+  position: absolute;
+  font-size: calc(var(--board) / 40);
+  font-weight: 700;
+  pointer-events: none;
+}
+.sq[data-f]::after { content: attr(data-f); right: 3px; bottom: 1px; }
+.sq[data-r]::before { content: attr(data-r); left: 3px; top: 1px; }
+.sq.l[data-f]::after, .sq.l[data-r]::before { color: var(--sq-dark); }
+.sq.d[data-f]::after, .sq.d[data-r]::before { color: var(--sq-light); }
+
+.badge {
+  position: absolute;
+  top: 0;
+  right: 0;              /* collée au coin : .board masque le débordement */
+  width: 38%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: calc(var(--board) / 30);
+  font-style: normal;
+  font-weight: 800;
+  color: #fff;
+  border: 2px solid #302e2b;
+  z-index: 2;
+}
+/* la couleur du texte doit être redéclarée ici : `.t-gaffe` & co. colorent le texte
+   en rouge/orange, ce qui rendrait la pastille illisible sur son propre fond */
+.badge.t-meilleur { background: var(--meilleur); color: #fff; }
+.badge.t-imprecision { background: var(--imprecision); color: #3a2f00; }
+.badge.t-erreur { background: var(--erreur); color: #3a1f00; }
+.badge.t-gaffe { background: var(--gaffe); color: #fff; }
+
+.evalbar { height: 12px; width: 100%; background: #1a1916; border-radius: 6px; overflow: hidden; }
+.evalbar div { height: 100%; background: #f0f0ef; transition: width .15s; }
+
+.legend { display: flex; gap: .7rem; flex-wrap: wrap; font-size: .74rem; font-weight: 700; }
+
+.plyInfo {
+  grid-column: 1 / -1;   /* sous l'échiquier ET la liste des coups */
+  font-size: .9rem;
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: .7rem .85rem;
+  min-height: 4.5em;
+}
+.ply-head { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.ply-head b { font-size: 1rem; }
+.ply-head .muted { font-size: .82rem; }
+.pill {
+  padding: .1rem .5rem;
+  border-radius: 999px;
+  background: #ffffff14;
+  font-size: .75rem;
+  font-weight: 700;
+}
+.tip { margin: .5rem 0 0; }
+.motif { margin-top: .6rem; border-top: 1px solid #ffffff14; padding-top: .55rem; }
+.motif > b { display: block; margin-bottom: .3rem; }
+.motif p { margin: .3rem 0 0; color: #d2d0cd; font-size: .86rem; }
+
+.movesWrap { min-width: 0; }
+#moves { font-variant-numeric: tabular-nums; }
+#moves td:first-child { width: 2.6rem; color: var(--muted); }
+#moves td.san { width: 50%; cursor: pointer; font-weight: 600; }
+#moves td.san .ev { float: right; color: var(--muted); font-size: .82em; font-weight: 400; }
+#moves tr.sel { background: #ffffff1f !important; }
+
+/* ---------------------------------------------------------------- états ---- */
+
+.t-gaffe { color: var(--gaffe); }
+.t-erreur { color: var(--erreur); }
+.t-imprecision { color: var(--imprecision); }
+.t-meilleur { color: var(--meilleur); }
+.t-bon { color: var(--bon); }
+.res-w { color: var(--meilleur); }
+.res-l { color: var(--gaffe); }
+.res-d { color: var(--muted); }
+
+progress { width: 180px; height: 10px; border: 0; border-radius: 5px; background: #21201d; }
+progress::-webkit-progress-bar { background: #21201d; border-radius: 5px; }
+progress::-webkit-progress-value { background: var(--accent); border-radius: 5px; }
+
+footer {
+  margin-top: 3rem;
+  font-size: .82rem;
+  color: var(--muted);
+  border-top: 1px solid #ffffff14;
+  padding-top: 1rem;
+}
+footer p { margin: .35rem 0; }
